@@ -1,26 +1,50 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 
 import "./styles.css";
+import api from "./services/api";
 
 function App() {
+  const [repositories, setRepositores] = useState([]);
+
+  useEffect(() => {
+    api.get('/repositories').then((response) => {
+      setRepositores(response.data);
+    })
+  }, [])
   async function handleAddRepository() {
-    // TODO
+    const response = await api.post('/repositories', {
+      title: "Desafio t",
+      url: "https://github.com/FelipenKniess/gostack-challange-githubRepository",
+      techs: [
+        "nodejs",
+        "viewjs"
+      ]
+    })
+
+    const newRepository = response.data;
+    setRepositores([...repositories, newRepository]);
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    await api.delete(`/repositories/${id}`);
+    console.log(repositories);
+    setRepositores(repositories.filter(
+      repository => repository.id !== id)
+    )
   }
 
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
+        {repositories.map(response => (
+          <li key={response.id}>
+              {response.title}
 
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
+              <button onClick={() => handleRemoveRepository(response.id)}>
+                Remover
+              </button>
+          </li>
+        ))}
       </ul>
 
       <button onClick={handleAddRepository}>Adicionar</button>
